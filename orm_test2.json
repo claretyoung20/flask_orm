@@ -1,0 +1,254 @@
+{
+  "info": {
+    "_postman_id": "abc123",
+    "name": "Flask CRUD API - ORM TEST 2",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create User",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n\t\"full_name\": \"John Doe\",\n\t\"age\": 25,\n\t\"address\": \"123 Main St\",\n\t\"profile_image_url\": \"http://example.com/profile.jpg\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/users",
+          "protocol": "{{protocol}}",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Users",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/users",
+          "protocol": "{{protocol}}",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get User by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/users/{{user_id}}",
+          "protocol": "{{protocol}}",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "users",
+            "{{user_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update User by ID",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n\t\"full_name\": \"Updated Name\",\n\t\"age\": 30,\n\t\"address\": \"456 New St\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/users/{{user_id}}",
+          "protocol": "{{protocol}}",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "users",
+            "{{user_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete User by ID",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/users/{{user_id}}",
+          "protocol": "{{protocol}}",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "users",
+            "{{user_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Post",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n\t\"post_content\": \"New post content\",\n\t\"user_id\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/posts",
+          "protocol": "{{protocol}}",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "posts"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Posts",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/posts",
+          "protocol": "{{protocol}}",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "posts"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Post by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/posts/{{post_id}}",
+          "protocol": "{{protocol}}",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "posts",
+            "{{post_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Post by ID",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n\t\"post_content\": \"Updated post content\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/posts/{{post_id}}",
+          "protocol": "{{protocol}}",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "posts",
+            "{{post_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Post by ID",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/posts/{{post_id}}",
+          "protocol": "{{protocol}}",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "posts",
+            "{{post_id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Comments for Post",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/posts/{{post_id}}/comments",
+          "protocol": "{{protocol}}",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "posts",
+            "{{post_id}}",
+            "comments"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Users Who Commented on Post",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/posts/{{post_id}}/commented_users",
+          "protocol": "{{protocol}}",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "posts",
+            "{{post_id}}",
+            "commented_users"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "protocolProfileBehavior": {
+    "disable": false
+  }
+}

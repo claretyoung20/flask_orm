@@ -1,0 +1,346 @@
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+import os
+from marshmallow import fields
+from flask_marshmallow import Marshmallow
+
+app = Flask(__name__)
+
+db_connection_string = os.environ['DB_URI2']
+app.config['SQLALCHEMY_DATABASE_URI'] = db_connection_string
+db = SQLAlchemy(app)
+ma = Marshmallow(app)
+
+
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
+    date_updated = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    post_content = db.Column(db.Text)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    comments = db.relationship('Comment', backref='post', lazy=True)
+
+# Define the User model
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    full_name = db.Column(db.String(100))
+    age = db.Column(db.Integer)
+    address = db.Column(db.String(100))
+    profile_image_url = db.Column(db.String(255))
+    posts = db.relationship('Post', backref='author', lazy=True)
+    comments = db.relationship('Comment', back_populates='user', lazy=True)
+
+# Define the Comment model
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    comment_content = db.Column(db.Text)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    user = db.relationship('User', back_populates='comments', lazy=True, foreign_keys=[user_id])
+
+class UserSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = User
+
+
+class PostSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = Post
+
+
+class CommentSchema(ma.SQLAlchemyAutoSchema):
+    user = fields.Nested(UserSchema)
+
+    class Meta:
+        model = Comment
+
+# Create tables in the database
+with app.app_context():
+    db.create_all()
+
+
+# Routes for CRUD operations
+
+# Create a new user
+@app.route('/users', methods=['POST'])
+def create_user():
+    try:
+        data = request.json
+        create_new_user = User(**data)
+        db.session.add(create_new_user)
+        db.session.commit()
+        user_schema = UserSchema()
+        new_user = user_schema.dump(create_new_user)
+        return jsonify(new_user), 201
+    except Exception as e:
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
+
+
+# Get all users
+@app.route('/users', methods=['GET'])
+def get_users():
+    try:
+        users = User.query.all()
+        user_schema = UserSchema(many=True)
+        result = user_schema.dump(users)
+        return jsonify(result)
+    except Exception as e:
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
+
+
+# Get a user by ID
+@app.route('/users/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    try:
+        user = User.query.get_or_404(user_id)
+        user_schema = UserSchema()
+        result = user_schema.dump(user)
+        return jsonify(result)
+    except Exception as e:
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
+
+
+# Update a user by ID
+@app.route('/users/<int:user_id>', methods=['PUT'])
+def update_user(user_id):
+    try:
+        user = User.query.get_or_404(user_id)
+        data = request.json
+        for key, value in data.items():
+            setattr(user, key, value)
+        db.session.commit()
+        return jsonify({'message': 'User updated successfully'})
+    except Exception as e:
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
+
+
+# Delete a user by ID
+@app.route('/users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    try:
+        user = User.query.get_or_404(user_id)
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({'message': 'User deleted successfully'})
+    except Exception as e:
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
+
+    # Create a new post
+
+
+@app.route('/posts', methods=['POST'])
+def create_post():
+    try:
+        data = request.json
+        new_post = Post(**data)
+        db.session.add(new_post)
+        db.session.commit()
+        post_schema = PostSchema()
+        return jsonify(post_schema.dump(new_post)), 201
+    except Exception as e:
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
+
+
+# Get all posts
+@app.route('/posts', methods=['GET'])
+def get_posts():
+    try:
+        posts = Post.query.all()
+        post_schema = PostSchema(many=True)
+        result = post_schema.dump(posts)
+        return jsonify(result)
+    except Exception as e:
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
+
+
+# Get a post by ID
+@app.route('/posts/<int:post_id>', methods=['GET'])
+def get_post(post_id):
+    try:
+        post = Post.query.get_or_404(post_id)
+        post_schema = PostSchema()
+        result = post_schema.dump(post)
+        return jsonify(result)
+    except Exception as e:
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
+
+
+# Update a post by ID
+@app.route('/posts/<int:post_id>', methods=['PUT'])
+def update_post(post_id):
+    try:
+        post = Post.query.get_or_404(post_id)
+        data = request.json
+        for key, value in data.items():
+            setattr(post, key, value)
+        db.session.commit()
+        return jsonify({'message': 'Post updated successfully'})
+    except Exception as e:
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
+
+
+# Delete a post by ID
+@app.route('/posts/<int:post_id>', methods=['DELETE'])
+def delete_post(post_id):
+    try:
+        post = Post.query.get_or_404(post_id)
+        db.session.delete(post)
+        db.session.commit()
+        return jsonify({'message': 'Post deleted successfully'})
+    except Exception as e:
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
+
+
+# Get all comments for a post
+@app.route('/posts/<int:post_id>/comments', methods=['GET'])
+def get_comments_for_post(post_id):
+    try:
+        comments = Comment.query.filter_by(post_id=post_id).all()
+        comment_schema = CommentSchema(many=True)
+        result = comment_schema.dump(comments)
+        return jsonify(result)
+    except Exception as e:
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
+
+
+# Get users who commented on a post
+@app.route('/posts/<int:post_id>/commented_users', methods=['GET'])
+def get_users_who_commented(post_id):
+    try:
+        users = User.query.join(Comment, User.id == Comment.user_id).filter(Comment.post_id == post_id).all()
+        user_schema = UserSchema(many=True)
+        result = user_schema.dump(users)
+        return jsonify(result)
+    except Exception as e:
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
+
+
+# Create a new comment
+@app.route('/comments', methods=['POST'])
+def create_comment():
+    try:
+        data = request.json
+        new_comment = Comment(**data)
+        db.session.add(new_comment)
+        db.session.commit()
+        comment_schema = CommentSchema()
+        return jsonify(comment_schema.dump(new_comment)), 201
+    except Exception as e:
+
+        error = 500
+
+        if isinstance(e.code, int):
+            error = e.code
+
+        return jsonify({'error': 'Internal Server Error'}), error
+
+
+# Get all comments
+@app.route('/comments', methods=['GET'])
+def get_comments():
+    try:
+        comments = Comment.query.all()
+        comment_schema = CommentSchema(many=True)
+        result = comment_schema.dump(comments)
+        return jsonify(result)
+    except Exception as e:
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
+
+
+# Get a comment by ID
+@app.route('/comments/<int:comment_id>', methods=['GET'])
+def get_comment(comment_id):
+    try:
+        comment = Comment.query.get_or_404(comment_id)
+        comment_schema = CommentSchema()
+        result = comment_schema.dump(comment)
+        return jsonify(result)
+    except Exception as e:
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
+
+
+# Update a comment by ID
+@app.route('/comments/<int:comment_id>', methods=['PUT'])
+def update_comment(comment_id):
+    try:
+        comment = Comment.query.get_or_404(comment_id)
+        data = request.json
+        for key, value in data.items():
+            setattr(comment, key, value)
+        db.session.commit()
+        return jsonify({'message': 'Comment updated successfully'})
+    except Exception as e:
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
+
+
+# Delete a comment by ID
+@app.route('/comments/<int:comment_id>', methods=['DELETE'])
+def delete_comment(comment_id):
+    try:
+        comment = Comment.query.get_or_404(comment_id)
+        db.session.delete(comment)
+        db.session.commit()
+        return jsonify({'message': 'Comment deleted successfully'})
+    except Exception as e:
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
+
+# Get all comments for a post with associated user details
+@app.route('/posts/<int:post_id>/comments2', methods=['GET'])
+def get_comments_for_post2(post_id):
+    comments = Comment.query.filter_by(post_id=post_id).all()
+
+    comment_schema = CommentSchema(many=True)
+    comment_data = comment_schema.dump(comments)
+
+    return jsonify(comment_data)
+
+if __name__ == '__main__':
+    app.run(debug=True)

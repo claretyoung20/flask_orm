@@ -1,2 +1,2 @@
-# flask_orm
+# Flask ORM
 Simple flask app to learn ORM with SQLAlchemy

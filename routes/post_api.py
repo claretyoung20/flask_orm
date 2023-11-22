@@ -1,6 +1,7 @@
 from flask import request, jsonify, Blueprint
 
 from models.schema import UserSchema, PostSchema, CommentSchema
+from routes import log_error
 from utilities import db
 from models.comment import Comment
 from models.post import Post
@@ -20,6 +21,7 @@ def create_post():
         post_schema = PostSchema()
         return jsonify(post_schema.dump(new_post)), 201
     except Exception as e:
+        log_error(e)
         error = 500
         if e.code:
             error = e.code
@@ -35,6 +37,7 @@ def get_posts():
         result = post_schema.dump(posts)
         return jsonify(result)
     except Exception as e:
+        log_error(e)
         error = 500
         if e.code:
             error = e.code
@@ -49,6 +52,7 @@ def get_post(post_id):
         result = post_schema.dump(post)
         return jsonify(result)
     except Exception as e:
+        log_error(e)
         error = 500
         if e.code:
             error = e.code
@@ -65,6 +69,7 @@ def update_post(post_id):
         db.session.commit()
         return jsonify({'message': 'Post updated successfully'})
     except Exception as e:
+        log_error(e)
         error = 500
         if e.code:
             error = e.code
@@ -79,6 +84,7 @@ def delete_post(post_id):
         db.session.commit()
         return jsonify({'message': 'Post deleted successfully'})
     except Exception as e:
+        log_error(e)
         error = 500
         if e.code:
             error = e.code
@@ -87,12 +93,19 @@ def delete_post(post_id):
 
 @post_app.route('/posts/<int:post_id>/comments2', methods=['GET'])
 def get_comments_for_post2(post_id):
-    comments = Comment.query.filter_by(post_id=post_id).all()
+    try:
+        comments = Comment.query.filter_by(post_id=post_id).all()
 
-    comment_schema = CommentSchema(many=True)
-    comment_data = comment_schema.dump(comments)
+        comment_schema = CommentSchema(many=True)
+        comment_data = comment_schema.dump(comments)
 
-    return jsonify(comment_data)
+        return jsonify(comment_data)
+    except Exception as e:
+        log_error(e)
+        error = 500
+        if e.code:
+            error = e.code
+        return jsonify({'error': e.description}), error
 
 
 @post_app.route('/posts/<int:post_id>/commented_users', methods=['GET'])
@@ -103,6 +116,7 @@ def get_users_who_commented(post_id):
         result = user_schema.dump(users)
         return jsonify(result)
     except Exception as e:
+        log_error(e)
         error = 500
         if e.code:
             error = e.code

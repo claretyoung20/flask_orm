@@ -1,13 +1,13 @@
+import logging
 from flask import request, jsonify, Blueprint
-
 from models.schema import CommentSchema
+from routes import log_error
 from utilities import db
 from models.comment import Comment
 
 comment_app = Blueprint('comment_app', __name__)
 
 
-# Create a new comment
 @comment_app.route('/comments', methods=['POST'])
 def create_comment():
     try:
@@ -18,12 +18,10 @@ def create_comment():
         comment_schema = CommentSchema()
         return jsonify(comment_schema.dump(new_comment)), 201
     except Exception as e:
-
         error = 500
-
         if isinstance(e.code, int):
             error = e.code
-
+        log_error(e)
         return jsonify({'error': 'Internal Server Error'}), error
 
 
@@ -36,6 +34,7 @@ def get_comments():
         result = comment_schema.dump(comments)
         return jsonify(result)
     except Exception as e:
+        log_error(e)
         error = 500
         if e.code:
             error = e.code
@@ -51,6 +50,7 @@ def get_comment(comment_id):
         result = comment_schema.dump(comment)
         return jsonify(result)
     except Exception as e:
+        log_error(e)
         error = 500
         if e.code:
             error = e.code
@@ -68,6 +68,7 @@ def update_comment(comment_id):
         db.session.commit()
         return jsonify({'message': 'Comment updated successfully'})
     except Exception as e:
+        log_error(e)
         error = 500
         if e.code:
             error = e.code
@@ -83,11 +84,10 @@ def delete_comment(comment_id):
         db.session.commit()
         return jsonify({'message': 'Comment deleted successfully'})
     except Exception as e:
+        log_error(e)
         error = 500
         if e.code:
             error = e.code
         return jsonify({'error': e.description}), error
 
 
-# if __name__ == '__main__':
-#     comment_app.run(debug=True)

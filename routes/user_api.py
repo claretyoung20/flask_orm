@@ -1,6 +1,7 @@
 from flask import request, jsonify, Blueprint, Flask
 
 from models.schema import UserSchema
+from routes import log_error
 from utilities import db
 from models.user import User
 
@@ -18,6 +19,7 @@ def create_user():
         new_user = user_schema.dump(create_new_user)
         return jsonify(new_user), 201
     except Exception as e:
+        log_error(e)
         error = 500
         if e.code:
             error = e.code
@@ -32,6 +34,7 @@ def get_users():
         result = user_schema.dump(users)
         return jsonify(result)
     except Exception as e:
+        log_error(e)
         error = 500
         if e.code:
             error = e.code
@@ -46,6 +49,7 @@ def get_user(user_id):
         result = user_schema.dump(user)
         return jsonify(result)
     except Exception as e:
+        log_error(e)
         error = 500
         if e.code:
             error = e.code
@@ -62,6 +66,7 @@ def update_user(user_id):
         db.session.commit()
         return jsonify({'message': 'User updated successfully'})
     except Exception as e:
+        log_error(e)
         error = 500
         if e.code:
             error = e.code
@@ -76,6 +81,7 @@ def delete_user(user_id):
         db.session.commit()
         return jsonify({'message': 'User deleted successfully'})
     except Exception as e:
+        log_error(e)
         error = 500
         if e.code:
             error = e.code
